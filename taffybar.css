@@ -1,0 +1,71 @@
+@define-color bar-bg rgba(20, 25, 34, 0.78);
+@define-color bar-border rgba(255, 255, 255, 0.10);
+@define-color pill-bg rgba(50, 58, 78, 0.88);
+@define-color pill-border rgba(121, 133, 166, 0.55);
+@define-color pill-highlight rgba(255, 255, 255, 0.08);
+@define-color text-main #e8edf8;
+@define-color text-muted #c0c8dd;
+
+.taffy-box {
+  font-family: "JetBrains Mono", "Iosevka Aile", "Noto Sans", sans-serif;
+  font-size: 10.5pt;
+  font-weight: 600;
+  color: @text-main;
+
+  background-color: @bar-bg;
+  border: 1px solid @bar-border;
+  border-radius: 12px;
+  padding: 0;
+  margin: 0;
+}
+
+.outer-pad {
+  margin: 4px 3px;
+  border: 1px solid @pill-border;
+  border-radius: 9px;
+  background-color: @pill-bg;
+  box-shadow:
+    inset 0 1px 0 @pill-highlight,
+    0 7px 18px rgba(0, 0, 0, 0.30);
+}
+
+.inner-pad {
+  padding: 2px 10px;
+}
+
+.contents {
+  padding: 0;
+}
+
+.label {
+  color: @text-main;
+}
+
+.graph-label {
+  color: @text-muted;
+}
+
+.workspaces .outer-pad {
+  margin: 4px 2px;
+}
+
+.workspaces .active .outer-pad {
+  background-color: rgba(102, 150, 245, 0.35);
+  border-color: rgba(153, 188, 255, 0.70);
+}
+
+.workspaces .visible .outer-pad {
+  background-color: rgba(73, 93, 130, 0.55);
+}
+
+.window-icon-container {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  padding: 1px 4px;
+}
+
+.auto-size-image,
+.sni-tray {
+  padding: 1px 3px;
+}
