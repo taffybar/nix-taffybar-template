@@ -2,13 +2,11 @@
   description = "Minimal project-style Taffybar template with Nix flakes";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
     taffybar = {
       url = "github:taffybar/taffybar";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
     };
+    nixpkgs.follows = "taffybar/nixpkgs";
+    flake-utils.follows = "taffybar/flake-utils";
   };
 
   outputs = {
@@ -24,11 +22,13 @@
         config.allowBroken = true;
       };
 
-      hpkgs = pkgs.haskellPackages.override {
-        overrides = hself: _: {
+      hpkgs = pkgs.haskellPackages.extend (
+        hself: hsuper: {
+          # Keep this template build focused on the template package in CI.
+          taffybar = pkgs.haskell.lib.dontCheck hsuper.taffybar;
           nix-taffybar-template = hself.callCabal2nix "nix-taffybar-template" ./. {};
-        };
-      };
+        }
+      );
 
       templatePackage = hpkgs.nix-taffybar-template;
     in {
@@ -54,4 +54,9 @@
         ];
       };
     });
+
+  nixConfig = {
+    extra-substituters = ["https://haskell-language-server.cachix.org"];
+    extra-trusted-public-keys = ["haskell-language-server.cachix.org-1:juFfHrwkOxqIOZShtC4YC1uT1bBcq2RSvC7OMKx0Nz8="];
+  };
 }

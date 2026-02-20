@@ -5,13 +5,17 @@ module Main (main) where
 import Data.Default (def)
 import Paths_nix_taffybar_template (getDataFileName)
 import System.Taffybar (startTaffybar)
+import System.Taffybar.Context (Backend (..), detectBackend)
 import System.Taffybar.Hooks (withLogServer, withToggleServer)
-import System.Taffybar.Information.CPU (cpuLoad)
+import System.Taffybar.Information.CPU2 (CPULoad (..), sampleCPULoad)
 import System.Taffybar.Information.Memory (memoryUsedRatio, parseMeminfo)
 import System.Taffybar.SimpleConfig
 import System.Taffybar.Widget
 import System.Taffybar.Widget.Generic.Graph (GraphConfig (..))
 import System.Taffybar.Widget.Generic.PollingGraph (pollingGraphNew)
+import System.Taffybar.Widget.HyprlandLayout (hyprlandLayoutNew)
+import qualified System.Taffybar.Widget.Windows as Windows
+import qualified System.Taffybar.Widget.Workspaces as Workspaces
 
 type RGBA = (Double, Double, Double, Double)
 
@@ -49,20 +53,33 @@ memoryGraphValues = do
 
 cpuGraphValues :: IO [Double]
 cpuGraphValues = do
-  (_, systemLoad, totalLoad) <- cpuLoad
+  CPULoad {cpuSystemLoad = systemLoad, cpuTotalLoad = totalLoad} <- sampleCPULoad 0.05 "cpu"
   pure [totalLoad, systemLoad]
+
+workspaceWidget =
+  Workspaces.workspacesNew $
+    Workspaces.defaultWorkspacesConfig
+      { Workspaces.showWorkspaceFn = Workspaces.hideEmpty
+      }
+
+windowsWidget = Windows.windowsNew Windows.defaultWindowsConfig
 
 main :: IO ()
 main = do
   cssPath <- getDataFileName "taffybar.css"
+  backendType <- detectBackend
+  let layoutWidget =
+        case backendType of
+          BackendX11 -> layoutNew def
+          BackendWayland -> hyprlandLayoutNew def
   let simpleConfig =
         defaultSimpleTaffyConfig
           { startWidgets =
               map
                 (>>= buildContentsBox)
-                [ workspacesNew def,
-                  layoutNew def,
-                  windowsNew def
+                [ workspaceWidget,
+                  layoutWidget,
+                  windowsWidget
                 ],
             centerWidgets =
               [ textClockNew Nothing "%a %b %_d  %H:%M" 5
@@ -72,7 +89,6 @@ main = do
               map
                 (>>= buildContentsBox)
                 [ sniTrayNew,
-                  batteryIconNew,
                   pollingGraphNew cpuGraphConfig 0.5 cpuGraphValues,
                   pollingGraphNew memGraphConfig 1.0 memoryGraphValues,
                   mpris2New
