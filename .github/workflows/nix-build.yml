@@ -1,0 +1,22 @@
+name: Nix Build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          # Avoid hard-failing CI for repos/orgs that haven't been set up on FlakeHub Cache.
+          use-flakehub: false
+      - name: Nix build
+        run: nix build --accept-flake-config --print-build-logs .#packages.x86_64-linux.default
